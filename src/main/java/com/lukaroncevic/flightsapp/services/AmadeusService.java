@@ -7,6 +7,9 @@ import com.amadeus.resources.FlightOfferSearch;
 import com.amadeus.resources.Location;
 import com.lukaroncevic.flightsapp.dto.FlightSearchResultDto;
 import com.lukaroncevic.flightsapp.mappers.FlightOffersSearchFlightSearchResultDtoMapper;
+import com.lukaroncevic.flightsapp.model.FlightsSearch;
+import com.lukaroncevic.flightsapp.repositories.FlightSearchRepository;
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +31,9 @@ public class AmadeusService {
     @Autowired
     private FlightOffersSearchFlightSearchResultDtoMapper flightSearchResultDtoMapper;
 
+    @Autowired
+    private FlightSearchRepository flightSearchRepository;
+
     public List<Location> searchAirports(String keyword) {
 
         try{
@@ -46,10 +52,23 @@ public class AmadeusService {
 
     }
 
+    @Transactional
     public List<FlightSearchResultDto> searchFlights(String originLocationCode, String destinationLocationCode, LocalDate departureDate,
                                         LocalDate returnDate, Integer adults){
 
         try{
+
+            FlightsSearch flightsSearch = new FlightsSearch();
+            flightsSearch.setOriginLocationCode(originLocationCode);
+            flightsSearch.setDestinationLocationCode(destinationLocationCode);
+            flightsSearch.setDepartureDate(departureDate);
+            flightsSearch.setReturnDate(returnDate);
+            flightsSearch.setAdults(adults);
+
+            flightsSearch.setCreatedDate(LocalDate.now());
+            flightsSearch.setCreatedUser("Luka");
+
+            flightSearchRepository.save(flightsSearch);
 
             Params params = Params.with("originLocationCode", originLocationCode)
                     .and("destinationLocationCode", destinationLocationCode)
