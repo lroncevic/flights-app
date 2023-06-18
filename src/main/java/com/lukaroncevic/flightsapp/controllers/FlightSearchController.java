@@ -1,15 +1,15 @@
 package com.lukaroncevic.flightsapp.controllers;
 
 import com.amadeus.resources.Location;
+import com.lukaroncevic.flightsapp.dto.FlightSearchResultDto;
 import com.lukaroncevic.flightsapp.dto.LocationDto;
+import com.lukaroncevic.flightsapp.form.FlightSearchForm;
 import com.lukaroncevic.flightsapp.mappers.LocationLocationDtoMapper;
 import com.lukaroncevic.flightsapp.services.AmadeusService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -36,5 +36,18 @@ public class FlightSearchController {
                                 .map(location -> locationLocationDtoMapper.map(location))
                                 .toList()
                 );
+    }
+
+    @PostMapping("flights")
+    public ResponseEntity<List<FlightSearchResultDto>> searchFlights(@RequestBody @Valid FlightSearchForm flightSearchForm){
+
+        List<FlightSearchResultDto> flightSearchResultDtoList = amadeusService.searchFlights(
+                flightSearchForm.getOriginLocationCode(),
+                flightSearchForm.getDestinationLocationCode(),
+                flightSearchForm.getDepartureDate(),
+                flightSearchForm.getReturnDate(),
+                flightSearchForm.getAdults());
+
+        return ResponseEntity.ok().body(flightSearchResultDtoList);
     }
 }
