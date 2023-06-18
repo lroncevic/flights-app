@@ -1,18 +1,15 @@
 package com.lukaroncevic.flightsapp.model;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 
 import java.time.LocalDate;
+import java.util.List;
 
+@Table(name = "flights_search")
 @Entity
-public class FlightsSearch {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+public class FlightsSearch extends BaseEntity{
 
     private String originLocationCode;
 
@@ -24,21 +21,8 @@ public class FlightsSearch {
 
     private Integer adults;
 
-    private LocalDate createdDate;
-
-    private String createdUser;
-
-    private LocalDate updatedDate;
-
-    private String updatedUser;
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
+    @OneToMany(mappedBy = "flightsSearch")
+    private List<FlightSearchResult> flightSearchResultList;
 
     public String getOriginLocationCode() {
         return originLocationCode;
@@ -80,35 +64,11 @@ public class FlightsSearch {
         this.adults = adults;
     }
 
-    public LocalDate getCreatedDate() {
-        return createdDate;
+    public List<FlightSearchResult> getFlightSearchResultList() {
+        return flightSearchResultList;
     }
 
-    public void setCreatedDate(LocalDate createdDate) {
-        this.createdDate = createdDate;
-    }
-
-    public String getCreatedUser() {
-        return createdUser;
-    }
-
-    public void setCreatedUser(String createdUser) {
-        this.createdUser = createdUser;
-    }
-
-    public LocalDate getUpdatedDate() {
-        return updatedDate;
-    }
-
-    public void setUpdatedDate(LocalDate updatedDate) {
-        this.updatedDate = updatedDate;
-    }
-
-    public String getUpdatedUser() {
-        return updatedUser;
-    }
-
-    public void setUpdatedUser(String updatedUser) {
-        this.updatedUser = updatedUser;
+    public void setFlightSearchResultList(List<FlightSearchResult> flightSearchResultList) {
+        this.flightSearchResultList = flightSearchResultList;
     }
 }

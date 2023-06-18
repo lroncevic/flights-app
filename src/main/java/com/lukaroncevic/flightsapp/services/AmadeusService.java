@@ -7,8 +7,12 @@ import com.amadeus.resources.FlightOfferSearch;
 import com.amadeus.resources.Location;
 import com.lukaroncevic.flightsapp.dto.FlightSearchResultDto;
 import com.lukaroncevic.flightsapp.mappers.FlightOffersSearchFlightSearchResultDtoMapper;
+import com.lukaroncevic.flightsapp.mappers.FlightSearchToFlightSearchResultDtoMapper;
+import com.lukaroncevic.flightsapp.mappers.FlightSearchResultDtoFlightSearchResult;
+import com.lukaroncevic.flightsapp.model.FlightSearchResult;
 import com.lukaroncevic.flightsapp.model.FlightsSearch;
 import com.lukaroncevic.flightsapp.repositories.FlightSearchRepository;
+import com.lukaroncevic.flightsapp.repositories.FlightSearchResultRepository;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +38,15 @@ public class AmadeusService {
     @Autowired
     private FlightSearchRepository flightSearchRepository;
 
+    @Autowired
+    private FlightSearchResultRepository flightSearchResultRepository;
+
+    @Autowired
+    private FlightSearchResultDtoFlightSearchResult flightSearchResultDtoFlightSearchResult;
+
+    @Autowired
+    private FlightSearchToFlightSearchResultDtoMapper flightSearchToFlightSearchResultDtoMapper;
+
     public List<Location> searchAirports(String keyword) {
 
         try{
@@ -57,6 +70,20 @@ public class AmadeusService {
                                         LocalDate returnDate, Integer adults){
 
         try{
+
+            FlightsSearch existingFlightSearch = flightSearchRepository
+                    .findOneByOriginLocationCodeAndDestinationLocationCodeAndDepartureDateAndReturnDateAndAdults(
+                            originLocationCode, destinationLocationCode, departureDate, returnDate, adults);
+
+            if(existingFlightSearch != null){
+                List<FlightSearchResult> flightSearchResultList = existingFlightSearch.getFlightSearchResultList();
+
+                logger.warn("Fetched data from database.");
+
+                return flightSearchResultList.stream()
+                        .map(flightSearchResult -> flightSearchToFlightSearchResultDtoMapper.map(flightSearchResult))
+                        .toList();
+            }
 
             FlightsSearch flightsSearch = new FlightsSearch();
             flightsSearch.setOriginLocationCode(originLocationCode);
@@ -86,6 +113,15 @@ public class AmadeusService {
             List<FlightSearchResultDto> flightSearchResultDtoList = flightOfferSearchList.stream()
                     .map(flightOfferSearch -> flightSearchResultDtoMapper.map(flightOfferSearch))
                     .toList();
+
+            flightSearchResultDtoList.stream()
+                    .map(flightSearchResultDto -> flightSearchResultDtoFlightSearchResult.map(flightSearchResultDto))
+                    .forEach(flightSearchResult -> {
+                        flightSearchResult.setFlightsSearch(flightsSearch);
+                        flightSearchResultRepository.save(flightSearchResult);
+                    });
+
+            logger.warn("Fetched data from Amadeus API.");
 
             return flightSearchResultDtoList;
 
